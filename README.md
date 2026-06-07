@@ -24,6 +24,12 @@
 
 ---
 
+# ONLINE VERSION (NO INSTALLATION)
+
+[Open an online generator](https://panorama-sky-generator-kawvmuhapbgyi88g9f4lm7.streamlit.app/)
+
+---
+
 ## Requirements
 
 ### Python
@@ -206,8 +212,3 @@ starfield02.png
 Final 3×2 composite texture without labels.
 
 *Skipped when using `-raw`.*
-
-
-# ONLINE VERSION (NO INSTALLATION)
-
-[Open an online generator](https://panorama-sky-generator-kawvmuhapbgyi88g9f4lm7.streamlit.app/)
