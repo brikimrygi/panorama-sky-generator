@@ -50,6 +50,13 @@ sudo pacman -Syu
 sudo pacman -S python3 python3-pip
 ```
 
+### Android (Termux)
+
+```bash
+pkg install (or -i) python3
+pkg install (or -i) python3-pip
+```
+
 ---
 
 ## Installation
@@ -76,6 +83,13 @@ sudo pacman -S python-numpy
 sudo pacman -S python-pillow
 ```
 * Use if you can't download python3-pip!
+
+### Android (Termux)
+
+```bash
+pkg install (or -i) python-numpy
+pkg install (or -i) python-pillow
+```
 
 ---
 
