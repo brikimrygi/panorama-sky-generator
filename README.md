@@ -43,6 +43,13 @@ sudo apt update
 sudo apt install python3 python3-pip
 ```
 
+### Linux (Arch)
+
+```bash
+sudo pacman -Syu
+sudo pacman -S python3 python3-pip
+```
+
 ---
 
 ## Installation
@@ -52,6 +59,23 @@ Install the required dependencies:
 ```bash
 pip install numpy Pillow
 ```
+* To use this, install python3-pip firstly!
+
+### Linux (Debian / Ubuntu)
+
+```bash
+sudo apt install python-numpy
+sudo apt install python-pillow
+```
+* Use if you can't download python3-pip!
+
+### Linux (Arch)
+
+```bash
+sudo pacman -S python-numpy
+sudo pacman -S python-pillow
+```
+* Use if you can't download python3-pip!
 
 ---
 
