@@ -11,11 +11,9 @@
 
 * Converts panoramas into cubemap skybox faces.
 * Supports both:
-
   * 360° × 180° equirectangular panoramas.
   * Flat wide panoramic images.
 * Generates:
-
   * Individual skybox faces.
   * Layout sheets.
   * Final `starfield02.png` composite texture.
@@ -37,7 +35,6 @@
 Python 3 is required.
 
 Download Python:
-
 https://www.python.org/downloads/
 
 **Windows:** During installation, enable **"Add Python to PATH"**.
@@ -59,8 +56,8 @@ sudo pacman -S python3 python3-pip
 ### Android (Termux)
 
 ```bash
-pkg install (or -i) python3
-pkg install (or -i) python3-pip
+pkg install python3
+pkg install python3-pip
 ```
 
 ---
@@ -72,7 +69,7 @@ Install the required dependencies:
 ```bash
 pip install numpy Pillow
 ```
-* To use this, install python3-pip firstly!
+* To use this, install python3-pip first!
 
 ### Linux (Debian / Ubuntu)
 
@@ -80,7 +77,7 @@ pip install numpy Pillow
 sudo apt install python-numpy
 sudo apt install python-pillow
 ```
-* Use if you can't download python3-pip!
+* Use if you cannot download python3-pip!
 
 ### Linux (Arch)
 
@@ -88,13 +85,13 @@ sudo apt install python-pillow
 sudo pacman -S python-numpy
 sudo pacman -S python-pillow
 ```
-* Use if you can't download python3-pip!
+* Use if you cannot download python3-pip!
 
 ### Android (Termux)
 
 ```bash
-pkg install (or -i) python-numpy
-pkg install (or -i) python-pillow
+pkg install python-numpy
+pkg install python-pillow
 ```
 
 ---
@@ -102,7 +99,7 @@ pkg install (or -i) python-pillow
 ## Usage
 
 ```bash
-python psg.py <panorama_filename> [face_size] [-sp|-st] [nf_flags] [-raw|-final] [-np]
+python psg.py <panorama_filename> [face_size] [-sp|-st] [nf_flags] [-raw|-final] [-np] [-vs scale]
 ```
 
 ### Projection Modes
@@ -126,11 +123,12 @@ python psg.py <panorama_filename> [face_size] [-sp|-st] [nf_flags] [-raw|-final]
 
 ### Optimization & Output Flags
 
-| Flag              | Description                                                                      |
-| ----------------- | -------------------------------------------------------------------------------- |
-| `-np`, `-nopinch` | Applies radial blending to reduce polar pinch artifacts on top and bottom faces. |
-| `-raw`            | Generate only the six cubemap faces (`sky_*.png`).                               |
-| `-final`, `-f`    | Generate only the final `starfield02.png` texture using in-memory processing.    |
+| Flag              | Description                                                                                        |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| `-np`, `-nopinch` | Applies radial blending to reduce polar pinch artifacts on top and bottom faces.                   |
+| `-vs`, `-vscale`  | Manually adjust vertical stretch of the panorama in `-sp` mode (e.g., `-vs 0.75`). Useful for 21:9.|
+| `-raw`            | Generate only the six cubemap faces (`sky_*.png`).                                                 |
+| `-final`, `-f`    | Generate only the final `starfield02.png` texture using in-memory processing.                      |
 
 ---
 
@@ -146,6 +144,12 @@ Generate a 2048px skybox using spherical mode with pinch correction:
 
 ```bash
 python psg.py panorama.jpg 2048 -sp -np
+```
+
+Generate a 2048px skybox from a 21:9 ultra-wide image, flattening the vertical stretch:
+
+```bash
+python psg.py panorama.jpg 2048 -sp -vs 0.75
 ```
 
 Generate only `starfield02.png` using standard projection:
