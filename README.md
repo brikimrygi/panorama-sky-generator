@@ -1,84 +1,170 @@
+# Panorama Sky Generator (psg.py)
 
-- DISCLAIMER:
-THIS CODE IS FULLY AI MADE! I PERSONALLY DON'T LIKE USING AI FOR CODING, BUT I JUST WANTED TO SEE IS AI REALLY GOOD AT MAKING SCRIPTS LIKE THIS ONE! I MADE THIS FOR ONLY PERSONAL USAGE!
+> **Disclaimer**
+>
+> This project was created primarily as an experiment to test how capable AI is at generating scripts of this complexity.
+> The code was generated with AI assistance and was originally intended for personal use.
 
-========================================================================
-EN: SKYBOX GENERATION SCRIPT (psg.py) - INSTALLATION & RUNNING GUIDE
-========================================================================
+---
 
-This script is designed to automatically convert both 360° spherical
-panoramas and flat, wide panoramic images into individual cubemap
-faces (skybox) and pre-aligned layout sheets.
+## Features
 
-------------------------------------------------------------------------
-1. **SYSTEM REQUIREMENTS**
-------------------------------------------------------------------------
-To run the script, Python 3 must be installed on your computer.
+* Converts panoramas into cubemap skybox faces.
+* Supports both:
 
-* Windows & macOS:
-  Download and install Python from: https://www.python.org/downloads/
-  Important (Windows): During installation, make sure to check the
-  "Add Python to PATH" box at the bottom of the first setup window.
+  * 360° × 180° equirectangular panoramas.
+  * Flat wide panoramic images.
+* Generates:
 
-* Linux (Debian/Ubuntu):
-  Open a terminal and install the required packages by running:
-  sudo apt update && sudo apt install python3 python3-pip
+  * Individual skybox faces.
+  * Layout sheets.
+  * Final `starfield02.png` composite texture.
+* Multiple projection modes.
+* Optional face-specific filters and optimizations.
 
-------------------------------------------------------------------------
-2. **INSTALLING REQUIRED LIBRARIES**
-------------------------------------------------------------------------
-The script requires two external libraries (numpy and Pillow).
-Install them by typing the following command in your terminal
-(or Command Prompt on Windows):
+---
 
+## Requirements
+
+### Python
+
+Python 3 is required.
+
+Download Python:
+
+https://www.python.org/downloads/
+
+**Windows:** During installation, enable **"Add Python to PATH"**.
+
+### Linux (Debian / Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install python3 python3-pip
+```
+
+---
+
+## Installation
+
+Install the required dependencies:
+
+```bash
 pip install numpy Pillow
+```
 
-------------------------------------------------------------------------
-3. **HOW TO RUN AND PROJECTION MODES**
-------------------------------------------------------------------------
-Open a terminal / command prompt, navigate to the folder containing
-the script, and run:
+---
 
+## Usage
+
+```bash
 python psg.py <panorama_filename> [face_size] [-sp|-st] [nf_flags] [-raw|-final] [-np]
+```
 
-Available projection modes:
-  -sp, -spherical - (Recommended for flat, wide photos) Spherical mode.
-                    Keeps the horizon perfectly flat in-game and prevents
-                    it from bending into a bowl shape.
-  -st, -standard  - (Recommended for true 360°x180° panoramas) Standard mode.
-                    Accurately projects the sky directly above the player.
+### Projection Modes
 
-No-Filter Flags:
-  -nf             - Disables filters on all faces at once (pure raw cubemap).
-  -nft            - Disables vertical flip on the TOP face.
-  -nfb            - Disables rotations on the BOTTOM face.
-  -nff            - Disables half-mirror filter on the FRONT face.
-  -nfbk           - Disables half-mirror filter on the BACK face.
-  -nfl            - Disables generating LEFT face as a right-mirror (pure render).
-  -nfr            - Disables filters on the RIGHT face.
+| Flag                | Description                                                                                        |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| `-sp`, `-spherical` | Recommended for flat panoramic images. Keeps the horizon flat and prevents bowl-shaped distortion. |
+| `-st`, `-standard`  | Recommended for true 360° × 180° panoramas. Accurately projects the sky above the player.          |
 
-Optimization & Extra Filter Flags:
-  -np, -nopinch   - (No Pinch) Enables a radial blending filter at the center
-                    of sky_top and sky_bottom to completely remove the ugly
-                    "vortex/pinch" effect (Polar Coordinates convergence).
-  -raw            - (Raw Mode) Generates only the 6 individual face files (sky_*.png),
-                    completely skipping the creation of layouts and composite grids.
-  -final, -f      - (Final Mode) Generates only the final starfield02.png composite grid,
-                    skipping individual faces and auxiliary grids (in-memory processing).
+### No-Filter Flags
 
-Examples of usage:
-- python psg.py panorama.jpg                   (Auto-detection, size 1024)
-- python psg.py panorama.jpg 2048 -sp -np      (Spherical mode with pinch removal, 2048)
-- python psg.py panorama.jpg -st -final 2048   (Standard mode, starfield02.png only, 2048)
+| Flag    | Description                                   |
+| ------- | --------------------------------------------- |
+| `-nf`   | Disable filters on all faces.                 |
+| `-nft`  | Disable vertical flip on the TOP face.        |
+| `-nfb`  | Disable rotations on the BOTTOM face.         |
+| `-nff`  | Disable half-mirror filter on the FRONT face. |
+| `-nfbk` | Disable half-mirror filter on the BACK face.  |
+| `-nfl`  | Disable mirrored LEFT face generation.        |
+| `-nfr`  | Disable filters on the RIGHT face.            |
 
-------------------------------------------------------------------------
-4. **GENERATED OUTPUT FILES**
-------------------------------------------------------------------------
-All files are saved inside the automatically created folder
-"panorama-sky-generator" in your current working directory:
+### Optimization & Output Flags
 
-* sky_front.png, sky_back.png, sky_left.png, sky_right.png, sky_top.png, sky_bottom.png
-  - Individual, cropped skybox faces (skipped in -final).
-* skybox_grid_3x2.png - A 3x2 grid template with labels and transparency (skipped in -raw, -final).
-* skybox_strip_1x3.png - A vertical 1x3 strip layout (Top, Front, Bottom) (skipped in -raw, -final).
-* starfield02.png - The final, complete 3x2 grid template without any labels (skipped in -raw).
+| Flag              | Description                                                                      |
+| ----------------- | -------------------------------------------------------------------------------- |
+| `-np`, `-nopinch` | Applies radial blending to reduce polar pinch artifacts on top and bottom faces. |
+| `-raw`            | Generate only the six cubemap faces (`sky_*.png`).                               |
+| `-final`, `-f`    | Generate only the final `starfield02.png` texture using in-memory processing.    |
+
+---
+
+## Examples
+
+Auto-detect panorama type and generate a 1024px skybox:
+
+```bash
+python psg.py panorama.jpg
+```
+
+Generate a 2048px skybox using spherical mode with pinch correction:
+
+```bash
+python psg.py panorama.jpg 2048 -sp -np
+```
+
+Generate only `starfield02.png` using standard projection:
+
+```bash
+python psg.py panorama.jpg -st -final 2048
+```
+
+---
+
+## Output Files
+
+All generated files are stored inside:
+
+```text
+panorama-sky-generator/
+```
+
+### Cubemap Faces
+
+```text
+sky_front.png
+sky_back.png
+sky_left.png
+sky_right.png
+sky_top.png
+sky_bottom.png
+```
+
+Individual skybox faces.
+
+*Skipped when using `-final`.*
+
+### Layouts
+
+```text
+skybox_grid_3x2.png
+```
+
+3×2 labeled grid template with transparency.
+
+*Skipped when using `-raw` or `-final`.*
+
+```text
+skybox_strip_1x3.png
+```
+
+Vertical strip layout containing:
+
+```text
+Top
+Front
+Bottom
+```
+
+*Skipped when using `-raw` or `-final`.*
+
+### Final Texture
+
+```text
+starfield02.png
+```
+
+Final 3×2 composite texture without labels.
+
+*Skipped when using `-raw`.*
