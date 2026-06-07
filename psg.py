@@ -39,7 +39,7 @@ pip install numpy Pillow
 ------------------------------------------------------------------------
 Otwórz terminal lub wiersz poleceń, przejdź do folderu ze skryptem i wpisz:
 
-python psg.py <nazwa_pliku> [rozmiar_sciany] [-sp|-st] [flagi_nf] [-raw|-final] [-np]
+python psg.py <nazwa_pliku> [rozmiar_sciany] [-sp|-st] [flagi_nf] [-raw|-final] [-np] [-vs skala]
 
 Dostępne parametry i tryby rzutowania:
   -sp, -spherical - (Zalecany dla płaskich, szerokich zdjęć) Tryb sferyczny.
@@ -61,6 +61,8 @@ Flagi optymalizacji i filtrów dodatkowych:
   -np, -nopinch   - (No Pinch) Włącza filtr usuwający efekt "wirówki" (Polar 
                     Coordinates pinch) w centralnym punkcie sufitu (sky_top) 
                     oraz podłogi (sky_bottom). Tworzy gładkie, jednolite przejście.
+  -vs, -vscale    - Ręczne rozciągnięcie pionowe obrazu dla trybu -sp (np. -vs 0.75).
+                    Pomaga spłaszczyć rozciągnięte w pionie kadry, takie jak 21:9.
   -raw            - (Raw Mode) Generuje wyłącznie 6 pojedynczych ścian sky_*.png,
                     pomijając całkowicie tworzenie szablonów i siatek zbiorczych.
   -final, -f      - (Final Mode) Generuje wyłącznie plik końcowy starfield02.png,
@@ -69,6 +71,7 @@ Flagi optymalizacji i filtrów dodatkowych:
 Przykłady użycia:
 - python psg.py panorama.jpg                    (Auto-wykrywanie, rozmiar 1024)
 - python psg.py panorama.jpg 2048 -sp -np       (Cylindryczny z usunięciem wirówki, 2048)
+- python psg.py panorama.jpg 2048 -sp -vs 0.75  (Dla panoramy 21:9 ze spłaszczeniem pionowym)
 - python psg.py panorama.jpg -st -final 2048    (Standardowy, tylko starfield02.png, 2048)
 
 ------------------------------------------------------------------------
@@ -121,7 +124,7 @@ pip install numpy Pillow
 Open a terminal / command prompt, navigate to the folder containing 
 the script, and run:
 
-python psg.py <panorama_filename> [face_size] [-sp|-st] [nf_flags] [-raw|-final] [-np]
+python psg.py <panorama_filename> [face_size] [-sp|-st] [nf_flags] [-raw|-final] [-np] [-vs scale]
 
 Available projection modes:
   -sp, -spherical - (Recommended for flat, wide photos) Spherical mode. 
@@ -143,6 +146,8 @@ Optimization & Extra Filter Flags:
   -np, -nopinch   - (No Pinch) Enables a radial blending filter at the center 
                     of sky_top and sky_bottom to completely remove the ugly 
                     "vortex/pinch" effect (Polar Coordinates convergence).
+  -vs, -vscale    - Manually adjust vertical stretch of the panorama in -sp mode (e.g., -vs 0.75).
+                    Useful to flatten vertically stretched custom crops (like 21:9).
   -raw            - (Raw Mode) Generates only the 6 individual face files (sky_*.png),
                     completely skipping the creation of layouts and composite grids.
   -final, -f      - (Final Mode) Generates only the final starfield02.png composite grid,
@@ -151,6 +156,7 @@ Optimization & Extra Filter Flags:
 Examples of usage:
 - python psg.py panorama.jpg                   (Auto-detection, size 1024)
 - python psg.py panorama.jpg 2048 -sp -np      (Spherical mode with pinch removal, 2048)
+- python psg.py panorama.jpg 2048 -sp -vs 0.75 (For 21:9 panoramas to squash vertical stretch)
 - python psg.py panorama.jpg -st -final 2048   (Standard mode, starfield02.png only, 2048)
 
 ------------------------------------------------------------------------
@@ -180,7 +186,7 @@ except AttributeError:
     FLIP_LR = Image.FLIP_LEFT_RIGHT
     FLIP_TB = Image.FLIP_TOP_BOTTOM
 
-def project_face(img_array, face, face_size, selected_mode, no_pinch=False):
+def project_face(img_array, face, face_size, selected_mode, no_pinch=False, v_scale_val=None):
     h_pano, w_pano, channels = img_array.shape
     u, v = np.meshgrid(np.linspace(-1, 1, face_size), np.linspace(-1, 1, face_size))
     
@@ -227,7 +233,7 @@ def project_face(img_array, face, face_size, selected_mode, no_pinch=False):
         v_ratio = z / d_safe
         
         px = ((theta + np.pi) / (2 * np.pi)) * (w_pano - 1)
-        v_scale = aspect / 2.0
+        v_scale = v_scale_val if v_scale_val is not None else (aspect / 2.0)
         py = (0.5 - (v_ratio * v_scale / 2.0)) * (h_pano - 1)
         
     # Bezpieczne przycinanie współrzędnych
@@ -255,7 +261,7 @@ def project_face(img_array, face, face_size, selected_mode, no_pinch=False):
     else:
         return img_array[py, px]
 
-def generate_skybox(panorama_path, face_size=1024, mode="auto", nf_top=False, nf_bottom=False, nf_front=False, nf_back=False, nf_left=False, nf_right=False, no_pinch=False, raw_mode=False, final_mode=False):
+def generate_skybox(panorama_path, face_size=1024, mode="auto", nf_top=False, nf_bottom=False, nf_front=False, nf_back=False, nf_left=False, nf_right=False, no_pinch=False, v_scale_val=None, raw_mode=False, final_mode=False):
     if not os.path.exists(panorama_path):
         print(f"Błąd: Nie znaleziono pliku '{panorama_path}'.")
         sys.exit(1)
@@ -309,15 +315,21 @@ def generate_skybox(panorama_path, face_size=1024, mode="auto", nf_top=False, nf
                 elif face == 'right' and nf_right:
                     print(" -> Generowanie czystej ściany right (wyłączony filtr)...")
                 # Pozostałe ściany są projektowane na podstawie wybranego trybu
-                face_data = project_face(img_array, face, face_size, selected_mode, no_pinch)
+                face_data = project_face(img_array, face, face_size, selected_mode, no_pinch, v_scale_val)
                 face_image = Image.fromarray(face_data)
             
             # Warunkowe nakładanie filtrów
             if not nf_top or not nf_bottom or not nf_front or not nf_back or not nf_left or not nf_right:
                 # Modyfikacje dla ściany top (odwrócenie pionowe)
                 if face == 'top' and not nf_top:
-                    print(" -> Odwracanie ściany top pionowo (globalnie)...")
-                    face_image = face_image.transpose(FLIP_TB)
+                    # 1. Mirror bottom half onto the top half (using vertical flip)
+                    bottom_half = face_image.crop((0, face_size // 2, face_size, face_size))
+                    mirrored_top = bottom_half.transpose(FLIP_TB)
+                    face_image.paste(mirrored_top, (0, 0))
+                    
+                    # 2. Rotate 90 degrees right (clockwise)
+                    print(" -> Odbijanie dolnej połowy top na górną i obracanie o 90 stopni w prawo (globalnie)...")
+                    face_image = face_image.transpose(ROT_90_CW)
                     
                 # Modyfikacje dla ściany bottom (obrót do góry nogami - 180 stopni)
                 elif face == 'bottom' and not nf_bottom:
@@ -358,10 +370,10 @@ def generate_skybox(panorama_path, face_size=1024, mode="auto", nf_top=False, nf
             print(f"\nGotowe! Wygenerowano pojedyncze ściany (tryb RAW) w folderze: {output_dir}")
             return
 
+        print(" -> Tworzenie szablonu siatki 3x2 z przezroczystością i napisami (skybox_grid_3x2.png)...")
         # Szablon 1: Siatka 3x2 w oryginalnym układzie użytkownika (RGBA z przezroczystością)
         # Pomijane w trybie FINAL
         if not final_mode:
-            print(" -> Tworzenie szablonu siatki 3x2 z przezroczystością i napisami (skybox_grid_3x2.png)...")
             grid_3x2 = Image.new('RGBA', (face_size * 3, face_size * 2), (0, 0, 0, 0))
             grid_3x2.paste(generated_images['back'].convert('RGBA'), (face_size * 2, 0))
             grid_3x2.paste(generated_images['left'].convert('RGBA'), (0, face_size))
@@ -444,7 +456,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if len(sys.argv) < 2:
-        print("Użycie: psg <nazwa_pliku_lub_sciezka.png> [rozmiar_sciany] [-sp|-st] [-nf] [-nft] [-nfb] [-nff] [-nfbk] [-nfl] [-nfr] [-np] [-raw|-final] lub psg -help")
+        print("Użycie: psg <nazwa_pliku_lub_sciezka.png> [rozmiar_sciany] [-sp|-st] [-nf] [-nft] [-nfb] [-nff] [-nfbk] [-nfl] [-nfr] [-np] [-vs skala] [-raw|-final] lub psg -help")
         sys.exit(1)
         
     input_path = sys.argv[1]
@@ -453,6 +465,7 @@ if __name__ == "__main__":
     raw_mode = False
     final_mode = False
     no_pinch = False
+    v_scale_val = None
     
     nf_top = False
     nf_bottom = False
@@ -461,8 +474,9 @@ if __name__ == "__main__":
     nf_left = False
     nf_right = False
     
-    for arg in sys.argv[2:]:
-        arg_lower = arg.lower()
+    i = 2
+    while i < len(sys.argv):
+        arg_lower = sys.argv[i].lower()
         if arg_lower in ["-sp", "--sp", "-spherical", "--spherical"]:
             mode = "spherical"
         elif arg_lower in ["-st", "--st", "-standard", "--standard"]:
@@ -483,15 +497,27 @@ if __name__ == "__main__":
             nf_right = True
         elif arg_lower in ["-np", "--np", "-nopinch"]:
             no_pinch = True
+        elif arg_lower in ["-vs", "--vs", "-vscale", "--vscale"]:
+            if i + 1 < len(sys.argv):
+                try:
+                    v_scale_val = float(sys.argv[i+1])
+                    i += 1
+                except ValueError:
+                    print(f"Błąd: Wartość po fladze {sys.argv[i]} musi być liczbą zmiennoprzecinkową.")
+                    sys.exit(1)
+            else:
+                print(f"Błąd: Brak wartości po fladze {sys.argv[i]}.")
+                sys.exit(1)
         elif arg_lower in ["-raw", "--raw"]:
             raw_mode = True
         elif arg_lower in ["-final", "--final", "-f", "--f"]:
             final_mode = True
         else:
             try:
-                size = int(arg)
+                size = int(sys.argv[i])
             except ValueError:
-                print(f"Błąd: Niepoprawny argument '{arg}'. Dozwolone flagi: -sp, -st, -nf, -np, -raw, -final lub rozmiar.")
+                print(f"Błąd: Niepoprawny argument '{sys.argv[i]}'. Dozwolone flagi: -sp, -st, -nf, -np, -vs, -raw, -final lub rozmiar.")
                 sys.exit(1)
+        i += 1
                 
-    generate_skybox(input_path, size, mode, nf_top, nf_bottom, nf_front, nf_back, nf_left, nf_right, no_pinch, raw_mode, final_mode)
+    generate_skybox(input_path, size, mode, nf_top, nf_bottom, nf_front, nf_back, nf_left, nf_right, no_pinch, v_scale_val, raw_mode, final_mode)
