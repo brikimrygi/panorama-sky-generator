@@ -22,7 +22,8 @@
 
 ---
 
-# ONLINE VERSION (NO INSTALLATION)
+# ONLINE VERSION (NO INSTALLATION) 
+*CURRENTLY OFFLINE I'M LOOKING FOR A HOSTING 
 
 [Open an online generator](https://panorama-sky-generator-kawvmuhapbgyi88g9f4lm7.streamlit.app/)
 
